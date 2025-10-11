@@ -42,4 +42,3 @@ for (var i = 0; i < 5; i++)
     
     Console.WriteLine($"{subject} has been sent");
 }
-

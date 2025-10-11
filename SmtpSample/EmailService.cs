@@ -7,7 +7,13 @@ namespace SmtpSample;
 class EmailService : IDisposable
 {
     private readonly SmtpClient _smtpClient;
-    private readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
+    private static readonly HtmlEncoder HtmlEncoderInstance = HtmlEncoder.Default;
+    private static readonly string MessageTemplate;
+
+    static EmailService()
+    {
+        MessageTemplate = File.ReadAllText("MessageTemplate.html");
+    }
 
     public EmailService(string host, int port, NetworkCredential? credentials = null, bool enableSsl = true)
     {
@@ -25,7 +31,7 @@ class EmailService : IDisposable
         using var mailMessage = new MailMessage();
         
         mailMessage.Subject = subject;
-        mailMessage.Body = $"<h1>{subject}</h1><p>{_htmlEncoder.Encode(text)}</p>";
+        mailMessage.Body = string.Format(MessageTemplate, subject, HtmlEncoderInstance.Encode(text));
         mailMessage.IsBodyHtml = true;
         mailMessage.From = new MailAddress(from);
 
