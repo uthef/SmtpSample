@@ -7,6 +7,7 @@ namespace SmtpSample;
 class EmailService : IDisposable
 {
     private readonly SmtpClient _smtpClient;
+    private readonly HtmlEncoder _htmlEncoder = HtmlEncoder.Default;
 
     public EmailService(string host, int port, NetworkCredential? credentials = null, bool enableSsl = true)
     {
@@ -19,13 +20,12 @@ class EmailService : IDisposable
         };
     }
 
-    public async Task SendMessage(string[] recipients, string subject, string text, string from = "", CancellationToken ct = default)
+    public async Task SendMessageAsync(string[] recipients, string subject, string text, string from = "", CancellationToken ct = default)
     {
         using var mailMessage = new MailMessage();
-        var encoder = HtmlEncoder.Create();
         
         mailMessage.Subject = subject;
-        mailMessage.Body = $"<h1>{subject}</h1><p>{encoder.Encode(text)}</p>";
+        mailMessage.Body = $"<h1>{subject}</h1><p>{_htmlEncoder.Encode(text)}</p>";
         mailMessage.IsBodyHtml = true;
         mailMessage.From = new MailAddress(from);
 
@@ -37,9 +37,9 @@ class EmailService : IDisposable
         await _smtpClient.SendMailAsync(mailMessage, ct);
     }
     
-    public async Task SendMessage(string recipient, string subject, string text, string from = "", CancellationToken ct = default)
+    public async Task SendMessageAsync(string recipient, string subject, string text, string from = "", CancellationToken ct = default)
     {
-        await SendMessage([recipient], subject, text, from, ct);
+        await SendMessageAsync([recipient], subject, text, from, ct);
     }
 
     public void Dispose()
