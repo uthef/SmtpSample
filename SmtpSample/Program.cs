@@ -38,7 +38,8 @@ for (var i = 0; i < 5; i++)
     if (i > 0) await Task.Delay(TimeSpan.FromSeconds(1));
     
     var subject = $"Test message #{i + 1}";
-    await emailService.SendMessageAsync(recipients[0], subject, "<b>Hello!</b>", credentials?.UserName ?? "");
+    await emailService.SendMessageAsync(recipients[0], subject, "<b>Hello!</b>", 
+        credentials?.UserName ?? "");
     
     Console.WriteLine($"{subject} has been sent");
 }

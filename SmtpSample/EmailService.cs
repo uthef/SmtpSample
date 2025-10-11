@@ -7,7 +7,7 @@ namespace SmtpSample;
 class EmailService : IDisposable
 {
     private readonly SmtpClient _smtpClient;
-    private static readonly HtmlEncoder HtmlEncoderInstance = HtmlEncoder.Default;
+    private static readonly HtmlEncoder DefaultHtmlEncoder = HtmlEncoder.Default;
     private static readonly string MessageTemplate;
 
     static EmailService()
@@ -26,12 +26,19 @@ class EmailService : IDisposable
         };
     }
 
-    public async Task SendMessageAsync(string[] recipients, string subject, string text, string from = "", CancellationToken ct = default)
+    public async Task SendMessageAsync(string[] recipients, string subject, string text, string from = "", 
+        bool allowHtmlTags = false, CancellationToken ct = default)
     {
         using var mailMessage = new MailMessage();
+
+        if (!allowHtmlTags)
+        {
+            subject = DefaultHtmlEncoder.Encode(subject);
+            text = DefaultHtmlEncoder.Encode(text);
+        }
         
         mailMessage.Subject = subject;
-        mailMessage.Body = string.Format(MessageTemplate, subject, HtmlEncoderInstance.Encode(text));
+        mailMessage.Body = MessageTemplate.Replace("{subject}", subject).Replace("{content}", text);
         mailMessage.IsBodyHtml = true;
         mailMessage.From = new MailAddress(from);
 
@@ -43,9 +50,10 @@ class EmailService : IDisposable
         await _smtpClient.SendMailAsync(mailMessage, ct);
     }
     
-    public async Task SendMessageAsync(string recipient, string subject, string text, string from = "", CancellationToken ct = default)
+    public async Task SendMessageAsync(string recipient, string subject, string text, string from = "", 
+        bool allowHtmlTags = false, CancellationToken ct = default)
     {
-        await SendMessageAsync([recipient], subject, text, from, ct);
+        await SendMessageAsync([recipient], subject, text, from, allowHtmlTags, ct);
     }
 
     public void Dispose()
