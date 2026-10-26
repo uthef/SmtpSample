@@ -27,7 +27,7 @@ class EmailService : IDisposable
     }
 
     public async Task SendMessageAsync(string[] recipients, string subject, string text, string from = "", 
-        bool allowHtmlTags = false, CancellationToken ct = default)
+        bool allowHtmlTags = false, string? displayName = null, CancellationToken ct = default)
     {
         using var mailMessage = new MailMessage();
 
@@ -40,7 +40,7 @@ class EmailService : IDisposable
         mailMessage.Subject = subject;
         mailMessage.Body = MessageTemplate.Replace("{subject}", subject).Replace("{content}", text);
         mailMessage.IsBodyHtml = true;
-        mailMessage.From = new MailAddress(from);
+        mailMessage.From = new MailAddress(from, displayName);
 
         foreach (var recipient in recipients)
         {
@@ -51,9 +51,9 @@ class EmailService : IDisposable
     }
     
     public async Task SendMessageAsync(string recipient, string subject, string text, string from = "", 
-        bool allowHtmlTags = false, CancellationToken ct = default)
+        bool allowHtmlTags = false, string? displayName = null, CancellationToken ct = default)
     {
-        await SendMessageAsync([recipient], subject, text, from, allowHtmlTags, ct);
+        await SendMessageAsync([recipient], subject, text, from, allowHtmlTags, displayName, ct);
     }
 
     public void Dispose()
